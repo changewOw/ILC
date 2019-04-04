@@ -375,7 +375,7 @@ def load_weights(file_path ,model ,by_name=False, exclude=None):
     if hasattr(f, 'close'):
         f.close()
 
-def fuck_train():
+def train():
     model = get_model()
 
     train_datagen = data_generator(batch_size=batch_size)
@@ -428,4 +428,4 @@ def fuck_train():
 
 
 if __name__ == '__main__':
-    fuck_train()
+    train()
