@@ -239,9 +239,7 @@ def get_model():
 
     set_gt = KL.Input(shape=[C], name='input_set_gt') # 每个类别的所属集合 A:0 S:1 Shat:2 不加入训练:-1
     num_gt = KL.Input(shape=[C], name='input_num_gt') # 每个类别的实际个数
-    bbox_gt = KL.Input(shape=[MAX_INSTANCE, 4], name='input_bbox_gt')
-    class_ids_gt = KL.Input(shape=[MAX_INSTANCE], name='input_class_ids_gt')
-
+    
 
     # BackBone
     x = resnet_graph(input, 'resnet50', train_bn=True)
@@ -281,7 +279,7 @@ def get_model():
     class_loss = KL.Lambda(lambda x:Class_loss(*x),
                            name='ILC_class_loss')([class_confidence,set_gt])
 
-    inputs = [input, num_gt, set_gt, bbox_gt, class_ids_gt]
+    inputs = [input, num_gt, set_gt]
     outputs = [mse_loss, rank_loss, sp_loss, class_loss]
     return KM.Model(inputs, outputs, name='ILC')
 
@@ -492,36 +490,6 @@ if __name__ == '__main__':
     )
     model.save_weights("./checkpoints/stage2.hdf5")
 
-    # train stage 3 这部分加入bbox进行训练
-    load_weights("./checkpoints/stage2.hdf5", model)
-    set_trainable(model, regex_stage, 1)
-    compile_model(model, loss_names_all, base_lr=0.001, mult_lr=0.1, clipnorm=True)
-
-    model.fit_generator(
-        train_datagen,
-        epochs=260,
-        steps_per_epoch=800,
-        callbacks=callbacks_stage2,
-        max_queue_size=100,
-        workers=workers,
-        use_multiprocessing=True
-    )
-    model.save_weights("./checkpoints/stage3.hdf5")
-
-    # train stage 4 全部fine-training
-    load_weights("./checkpoints/stage3.hdf5", model)
-    set_trainable(model, regex_stage, 1)
-    compile_model(model, loss_names_all, base_lr=0.00001, mult_lr=1, clipnorm=True)
-
-    model.fit_generator(
-        train_datagen,
-        epochs=260,
-        steps_per_epoch=800,
-        callbacks=callbacks_stage2,
-        max_queue_size=100,
-        workers=workers,
-        use_multiprocessing=True
-    )
 
     model.save_weights('./final_stage.hdf5')
     print("ai ma")
