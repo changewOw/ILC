@@ -492,36 +492,7 @@ if __name__ == '__main__':
     )
     model.save_weights("./checkpoints/stage2.hdf5")
 
-    # train stage 3 这部分加入bbox进行训练
-    load_weights("./checkpoints/stage2.hdf5", model)
-    set_trainable(model, regex_stage, 1)
-    compile_model(model, loss_names_all, base_lr=0.001, mult_lr=0.1, clipnorm=True)
 
-    model.fit_generator(
-        train_datagen,
-        epochs=260,
-        steps_per_epoch=800,
-        callbacks=callbacks_stage2,
-        max_queue_size=100,
-        workers=workers,
-        use_multiprocessing=True
-    )
-    model.save_weights("./checkpoints/stage3.hdf5")
-
-    # train stage 4 全部fine-training
-    load_weights("./checkpoints/stage3.hdf5", model)
-    set_trainable(model, regex_stage, 1)
-    compile_model(model, loss_names_all, base_lr=0.00001, mult_lr=1, clipnorm=True)
-
-    model.fit_generator(
-        train_datagen,
-        epochs=260,
-        steps_per_epoch=800,
-        callbacks=callbacks_stage2,
-        max_queue_size=100,
-        workers=workers,
-        use_multiprocessing=True
-    )
 
     model.save_weights('./final_stage.hdf5')
     print("ai ma")
